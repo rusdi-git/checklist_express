@@ -1,9 +1,7 @@
 const express = require("express");
-const checklist = require("../models/checklist");
 const router = express.Router();
 const Checklist = require("../models/checklist");
 const Joi = require("joi");
-const { response } = require("express");
 
 const schema = Joi.object({
     object_domain:Joi.string().required(),
@@ -15,7 +13,7 @@ const schema = Joi.object({
     items:Joi.array().items(Joi.string().required())
 });
 
-const serializeChekclist =(data)=>{
+const serializeChekclist =(data,includeItems=false)=>{
     if(Array.isArray(data)) {
         const result = data.map(item=>serializeChekclist(item));
         return result;
@@ -31,6 +29,14 @@ const serializeChekclist =(data)=>{
                 urgency:data.urgency,
                 task_id:data.task_id
             }
+        }
+        if(includeItems) {
+            const items = data.items.map((item)=>({
+                description:item.description,
+                due_date:item.due_date,
+                urgency:item.urgency,
+            }));
+            result.attributes.items = data.items;
         }
         return result;
     }
@@ -50,7 +56,7 @@ router.post("/", async (req, res) => {
         const checklist = new Checklist(validatedData);
         try {
             const result = await checklist.save();
-            response = serializeChekclist(result);
+            const response = serializeChekclist(result);
             return res.json(response).status(200);   
         } catch (error) {
             return res.status(400).json("Error"+error);
@@ -102,7 +108,7 @@ router.delete("/:id",async (req,res)=>{
     try {
         const checklist = await Checklist.deleteOne({_id:params.id},validatedData);
         const response = serializeChekclist(checklist);
-        if(checklist.ok===1){
+        if(response.ok===1){
             return res.status(204);
         } else {
             return res.status(400).json({error:"Deletion Failed."})
@@ -111,5 +117,13 @@ router.delete("/:id",async (req,res)=>{
         return res.status(400).json("Error"+error);
     }
 });
+
+router.get("/:checklistId/items", async (req,res)=>{
+    const params = req.params;
+    try {
+
+    }
+});
+
 
 module.exports = router;
