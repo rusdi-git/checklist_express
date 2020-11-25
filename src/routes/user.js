@@ -21,7 +21,7 @@ router.post('/', async (req,res)=>{
             bcrypt.compare(value.password,current_user.password,async (err,result)=>{
                 const token = bcrypt.hashSync(current_user.username,bcrypt.genSaltSync(8));
                 const updated_user = await User.updateOne({username:current_user.username},{apikey:token});
-                res.status(200).json({apikey:token});
+                res.status(200).json({data:{api_key:token}});
             });
         } else {
             return res.status(404).json({result:'Not Found.'});

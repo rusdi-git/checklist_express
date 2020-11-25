@@ -1,0 +1,392 @@
+{
+	"info": {
+		"_postman_id": "ca2d84ba-342c-4f63-ab2e-e3175a32ef97",
+		"name": "ExpressRest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c5d7cb6b-60c3-4185-9121-bec72731c114",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Success Login\", function () {",
+							"    var jsonData = pm.response.json().data;",
+							"    pm.expect(jsonData).has.property('api_key');",
+							"    pm.collectionVariables.set('api_key',jsonData.api_key);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"data\":{\n        \"username\":\"admin\",\n        \"password\":\"admin123\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/authenticate",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"authenticate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ChecklistPost",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a2285405-f8ba-49ac-b5b0-a4a38cc32ff4",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Success Create Checklist\", function () {",
+							"    var jsonData = pm.response.json().data;",
+							"    pm.expect(jsonData).has.property('attributes');",
+							"    pm.expect(jsonData.attributes.object_domain).to.eql('contact');",
+							"    pm.expect(jsonData.attributes.object_id).to.eql('1');",
+							"    pm.expect(jsonData.attributes.is_completed).to.eql(false);",
+							"    pm.collectionVariables.set('checklist_id',jsonData.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "value",
+							"value": "{{api_key}}",
+							"type": "string"
+						},
+						{
+							"key": "key",
+							"value": "Authorization",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"data\": {\n    \"attributes\": {\n      \"object_domain\": \"contact\",\n      \"object_id\": \"1\",\n      \"due\": \"2019-01-25T07:50:14+00:00\",\n      \"urgency\": 1,\n      \"description\": \"Need to verify this guy house.\",\n      \"items\": [\n        \"Visit his house\",\n        \"I dont know\",\n        \"Meet him on the house\"\n      ],\n      \"task_id\": \"123\"\n    }\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/checklists",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"checklists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ChecklistGet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "317f3816-e852-4f9c-895e-d6729d69106b",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Success Get Checklists\", function () {",
+							"    var jsonData = pm.response.json().data;",
+							"    var latestData = jsonData[jsonData.length-1];",
+							"    pm.expect(latestData).has.property('attributes');",
+							"    pm.expect(latestData).has.property('links');",
+							"    pm.expect(latestData.attributes.object_domain).to.eql('contact');",
+							"    pm.expect(latestData.attributes.object_id).to.eql('1');",
+							"    pm.expect(latestData.attributes.is_completed).to.eql(false);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "value",
+							"value": "{{api_key}}",
+							"type": "string"
+						},
+						{
+							"key": "key",
+							"value": "Authorization",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/checklists",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"checklists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ChecklistGetOne",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ad4f69bd-bde0-4622-a4a6-ac5989398838",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Success Get Checklist\", function () {",
+							"    var jsonData = pm.response.json().data;",
+							"    pm.expect(jsonData).has.property('attributes');",
+							"    pm.expect(jsonData).has.property('links');",
+							"    pm.expect(jsonData.attributes.object_domain).to.eql('contact');",
+							"    pm.expect(jsonData.attributes.object_id).to.eql('1');",
+							"    pm.expect(jsonData.attributes.is_completed).to.eql(false);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "value",
+							"value": "{{api_key}}",
+							"type": "string"
+						},
+						{
+							"key": "key",
+							"value": "Authorization",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/checklists/{{checklist_id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"checklists",
+						"{{checklist_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ChecklistPatch",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "113407fd-ec9c-4301-a270-82bcb484fd35",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Success Update Checklist\", function () {",
+							"    var jsonData = pm.response.json().data;",
+							"    pm.expect(jsonData).has.property('attributes');",
+							"    pm.expect(jsonData).has.property('links');",
+							"    pm.expect(jsonData.attributes.object_domain).to.eql('phone');",
+							"    pm.expect(jsonData.attributes.urgency).to.eql(2);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "value",
+							"value": "{{api_key}}",
+							"type": "string"
+						},
+						{
+							"key": "key",
+							"value": "Authorization",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"data\": {\n    \"attributes\": {\n      \"object_domain\": \"phone\",\n      \"urgency\": 2\n    }\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/checklists/{{checklist_id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"checklists",
+						"{{checklist_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ChecklistDelete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "79b32956-4dd0-4ad3-84fd-e43008190217",
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "value",
+							"value": "{{api_key}}",
+							"type": "string"
+						},
+						{
+							"key": "key",
+							"value": "Authorization",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/checklists/{{checklist_id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"checklists",
+						"{{checklist_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "d8b54725-4569-4fe9-9452-602e4707999b",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "705191bf-4ce6-4fd3-a00c-578fd0562d92",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "865ff97f-bee5-425f-b144-deb55bf3977c",
+			"key": "url",
+			"value": "localhost:8000"
+		},
+		{
+			"id": "a78ced27-aefc-4db6-a228-6debbaaa61c4",
+			"key": "checklist_id",
+			"value": ""
+		},
+		{
+			"id": "12c633a5-421c-4fdc-96ba-4765b354708a",
+			"key": "item_id",
+			"value": ""
+		},
+		{
+			"id": "f6e4057c-b6f4-42bd-a07e-252330f9ec1d",
+			"key": "api_key",
+			"value": ""
+		},
+		{
+			"id": "bc5f95f1-885c-4cc4-bea7-900f6ca2d1e3",
+			"key": "template_id",
+			"value": ""
+		}
+	],
+	"protocolProfileBehavior": {}
+}
