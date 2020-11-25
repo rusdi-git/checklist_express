@@ -13,6 +13,15 @@ const schema = Joi.object({
     items:Joi.array().items(Joi.string().required())
 });
 
+const schemaUpdate = Joi.object({
+    object_domain:Joi.string(),
+    object_id:Joi.string(),
+    description:Joi.string(),
+    due:Joi.date(),
+    urgency:Joi.number(),
+    task_id:Joi.string().allow('')
+});
+
 const serializeChekclist =(data,includeItems=false)=>{
     if(Array.isArray(data)) {
         const result = data.map(item=>serializeChekclist(item));
@@ -44,16 +53,16 @@ const serializeChekclist =(data,includeItems=false)=>{
 
 router.post("/", async (req, res) => {
     const data = req.body.data.attributes;
-    const {error,validatedData} = schema.validate(data);
+    const {error,value} = schema.validate(data);
     if(error) {
         return res.status(400).json({status:400,error:'Validation Failed'});
     } else {
         const added_items = [];
-        for (const item of validatedData.items) {
+        for (const item of value.items) {
             added_items.push({description:item,due:value.due,urgency:value.urgency});
         }
-        validatedData.items = added_items;
-        const checklist = new Checklist(validatedData);
+        value.items = added_items;
+        const checklist = new Checklist(value);
         try {
             const result = await checklist.save();
             const response = serializeChekclist(result);
@@ -77,8 +86,7 @@ router.get("/",async (req,res) => {
 router.get("/:id",async (req,res) => {
     try {
         const params = req.params;
-        const data = req.body.data.attributes;
-        const checklist = await Checklist.updateOne({_id:params.id},parseChecklist(data));
+        const checklist = await Checklist.findOne({_id:params.id});
         const response = serializeChekclist(checklist);
         return res.json(response);
     } catch (error) {
@@ -89,14 +97,20 @@ router.get("/:id",async (req,res) => {
 router.patch("/:id",async (req,res)=>{
     const params = req.params;
     const data = req.body.data.attributes;
-    const {error,validatedData} = schema.validate(data);
+    const {error,value} = schemaUpdate.validate(data);
     if(error) {
+        console.log(error);
         return res.status(400).json({status:400,error:'Validation Failed'});
     } else {
         try {
-            const checklist = await Checklist.updateOne({_id:params.id},validatedData);            
-            const response = serializeChekclist(checklist);
-            return res.json(response);
+            const update = await Checklist.updateOne({_id:params.id},value);
+            if(update.ok) {
+                const checklist = await Checklist.findOne({_id:params.id});
+                const response = serializeChekclist(checklist);
+                return res.json(response);
+            } else {
+                return res.status(400).json({error:'Update Failed.'});
+            }
         } catch (error) {
             return res.status(400).json("Error"+error);
         }
@@ -106,8 +120,7 @@ router.patch("/:id",async (req,res)=>{
 router.delete("/:id",async (req,res)=>{
     const params = req.params;
     try {
-        const checklist = await Checklist.deleteOne({_id:params.id},validatedData);
-        const response = serializeChekclist(checklist);
+        const response = await Checklist.deleteOne({_id:params.id});
         if(response.ok===1){
             return res.status(204);
         } else {
@@ -118,12 +131,12 @@ router.delete("/:id",async (req,res)=>{
     }
 });
 
-router.get("/:checklistId/items", async (req,res)=>{
-    const params = req.params;
-    try {
+// router.get("/:checklistId/items", async (req,res)=>{
+//     const params = req.params;
+//     try {
 
-    }
-});
+//     }
+// });
 
 
 module.exports = router;
